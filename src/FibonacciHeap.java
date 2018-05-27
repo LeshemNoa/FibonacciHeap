@@ -5,7 +5,7 @@
  */
 public class FibonacciHeap {
 
-    public void pushTest(){}
+    private void test2() {}
 
    /**
     * public boolean empty()
