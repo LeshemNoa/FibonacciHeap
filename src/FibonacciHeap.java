@@ -5,7 +5,14 @@
  */
 public class FibonacciHeap {
 
-    public void pushTest(){}
+    //todo Rimon - Delete min etc.
+    // todo Noa - decrease key, delete, etc.
+    private static int totalLinks;
+    private static int totalCuts;
+    private int potential;
+    private HeapNode min;
+    private List<HeapNode>;
+    private int size;
 
    /**
     * public boolean empty()
@@ -18,13 +25,15 @@ public class FibonacciHeap {
     */
     public boolean empty()
     {
-    	return false; // should be replaced by student code
+        return (min == null);
     }
-		
+
    /**
     * public HeapNode insert(int key)
     *
-    * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap. 
+    * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap.
+    *
+    * Easy - lazy inset, just update doubly linked list of roots
     */
     public HeapNode insert(int key)
     {    
@@ -36,11 +45,11 @@ public class FibonacciHeap {
     *
     * Delete the node containing the minimum key.
     *
+    * Complicated, keep that for later
+    *
     */
-    public void deleteMin()
-    {
+    public void deleteMin() {
      	return; // should be replaced by student code
-     	
     }
 
    /**
@@ -51,14 +60,15 @@ public class FibonacciHeap {
     */
     public HeapNode findMin()
     {
-    	return new HeapNode(0);// should be replaced by student code
+    	return min;
     } 
     
    /**
     * public void meld (FibonacciHeap heap2)
-    *
-    * Meld the heap with heap2
-    *
+    *  Utilizing the doubly linked structure of the root list
+    *  Step 1: Compare the two mins, pick which one is the new min of the melded heap
+    *  Step 2: Change the new min's prev to point at the other min
+    *  Step 3: Change the other min's prev to point at the first min
     */
     public void meld (FibonacciHeap heap2)
     {
@@ -80,8 +90,10 @@ public class FibonacciHeap {
     * public int[] countersRep()
     *
     * Return a counters array, where the value of the i-th entry is the number of trees of order i in the heap. 
-    * 
+    *
+     * We will use this in delete min, this is the bucket sorting part.
     */
+    // probably going to be used in deleteMin
     public int[] countersRep()
     {
 	int[] arr = new int[42];
@@ -91,7 +103,12 @@ public class FibonacciHeap {
    /**
     * public void delete(HeapNode x)
     *
-    * Deletes the node x from the heap. 
+    * Delete and decrese key work very similar.
+    *
+    * We cut the subtree of the node we delete, we remove the node as the root,
+    * and add its child subtree to the list of trees. Perhaps triggering cascading
+    * cuts.
+    *
     *
     */
     public void delete(HeapNode x) 
@@ -156,7 +173,13 @@ public class FibonacciHeap {
     */
     public class HeapNode{
 
-	public int key;
+	private int key;
+	private int rank;
+	private boolean mark = false;
+	private HeapNode child;
+	private HeapNode next;
+	private HeapNode prev;
+	private HeapNode parent;
 
   	public HeapNode(int key) {
 	    this.key = key;
@@ -164,6 +187,7 @@ public class FibonacciHeap {
 
   	public int getKey() {
 	    return this.key;
+
       }
 
     }
