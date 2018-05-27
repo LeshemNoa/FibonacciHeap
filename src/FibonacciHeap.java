@@ -3,8 +3,9 @@
  *
  * An implementation of fibonacci heap over non-negative integers.
  */
-public class FibonacciHeap
-{
+public class FibonacciHeap {
+
+    public void pushTest(){}
 
    /**
     * public boolean empty()
