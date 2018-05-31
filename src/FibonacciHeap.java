@@ -5,14 +5,34 @@
  */
 public class FibonacciHeap {
 
-    //todo Rimon - Delete min etc.
-    // todo Noa - decrease key, delete, etc.
+//   TODO  Rimon - Delete min etc.
+//   TODO Noa - decrease key, delete, etc.
+    /**
+     * Counts the total number of links executed since the class was launched.
+     */
     private static int totalLinks;
+    /**
+     * Counts the total number of cuts executed since the class was launched.
+     */
     private static int totalCuts;
+    /**
+     * The data stuctrure's potential, given by the potential function:
+     * potential = #Trees + 2 * #Marked Nodes
+     */
     private int potential;
+    /**
+     * The node with the minimal key in the heap.
+     */
     private HeapNode min;
-    private List<HeapNode>;
+    /**
+     * The number of trees in the heaps.
+     */
+    private int treeNum;
+    /**
+     * The total number of nodes in the heap.
+     */
     private int size;
+
 
    /**
     * public boolean empty()
@@ -28,6 +48,7 @@ public class FibonacciHeap {
         return (min == null);
     }
 
+
    /**
     * public HeapNode insert(int key)
     *
@@ -36,8 +57,15 @@ public class FibonacciHeap {
     * Easy - lazy inset, just update doubly linked list of roots
     */
     public HeapNode insert(int key)
-    {    
-    	return new HeapNode(key); // should be replaced by student code
+    {
+        HeapNode newNode = new HeapNode(key);
+        if (this.min == null) {
+            this.min = newNode;
+            this.treeNum = 1;
+        }
+        else {
+
+        }
     }
 
    /**
@@ -171,24 +199,37 @@ public class FibonacciHeap {
     * another file 
     *  
     */
-    public class HeapNode{
+    public class HeapNode {
 
-	private int key;
-	private int rank;
-	private boolean mark = false;
-	private HeapNode child;
-	private HeapNode next;
-	private HeapNode prev;
-	private HeapNode parent;
+        private int key;
+        private int rank;
+        private boolean mark = false;
+        private HeapNode child;
+        private HeapNode next;
+        private HeapNode prev;
+        private HeapNode parent;
 
-  	public HeapNode(int key) {
-	    this.key = key;
-      }
+        public HeapNode(int key) {
+            this.key = key;
+        }
 
-  	public int getKey() {
-	    return this.key;
+        public int getKey() {
+            return this.key;
+        }
 
-      }
+    }
 
+    private class nodeCDLL {
+        private HeapNode head;
+        private int size;
+
+        private nodeCDLL(HeapNode head) {
+            this.head = head;
+            size = 1;
+        }
+
+        private insert(HeapNode newNode) {
+
+        }
     }
 }
