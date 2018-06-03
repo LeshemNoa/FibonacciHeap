@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /**
  * FibonacciHeap
  *
@@ -16,10 +18,9 @@ public class FibonacciHeap {
      */
     private static int totalCuts;
     /**
-     * The data stuctrure's potential, given by the potential function:
-     * potential = #Trees + 2 * #Marked Nodes
+     * The current number of marked nodes in the tree.
      */
-    private int potential;
+    private int marked;
     /**
      * The node with the minimal key in the heap.
      */
@@ -27,11 +28,11 @@ public class FibonacciHeap {
     /**
      * A circular, doubly linked list of the heap trees' roots.
      */
-    private nodeCDLL roots;
+    private NodeCDLL roots;
     /**
-     * The number of trees in the heaps.
+     * The highest rank out of all the trees in the heap.
      */
-    private int treeNum = roots.size;
+    private int maxRank;
     /**
      * The total number of nodes in the heap.
      */
@@ -39,10 +40,10 @@ public class FibonacciHeap {
 
     /**
      * Constructor for the FibonacciHeap class. Sets default values in all fields
-     * and assigns a new nodeCDLL object to the roots field.
+     * and assigns a new NodeCDLL object to the roots field.
      */
     public FibonacciHeap() {
-        roots = new nodeCDLL();
+        roots = new NodeCDLL();
     }
 
     /**
@@ -76,6 +77,7 @@ public class FibonacciHeap {
         else if (node.key < min.key) {
             min = node;
         }
+        size++;
         return node;
     }
 
@@ -100,18 +102,31 @@ public class FibonacciHeap {
     public HeapNode findMin()
     {
     	return min;
-    } 
-    
-   /**
-    * public void meld (FibonacciHeap heap2)
-    *  Utilizing the doubly linked structure of the root list
-    *  Step 1: Compare the two mins, pick which one is the new min of the melded heap
-    *  Step 2: Change the new min's prev to point at the other min
-    *  Step 3: Change the other min's prev to point at the first min
-    */
+    }
+
+    /**
+     * Melds two Fibonacci Heaps into the current one. <br>
+     *
+     * This method employs the lazy meld algorithm where the two lists of
+     * trees are joined into one and the minimal node is updated if necessary.
+     *
+     * This method runs in O(1) time as its runtime complexity is determined
+     * by that of NodeCDLL.join, which runs in O(1) time.
+     *
+     * @param heap2     Another Fibonacci heap to be melded with this one
+     */
     public void meld (FibonacciHeap heap2)
     {
-    	  return; // should be replaced by student code   		
+        this.roots.join(heap2.roots);
+        if (heap2.roots.size != 0) {
+            if (heap2.min.key < this.min.key) {
+                this.min = heap2.min;
+            }
+            if (this.maxRank < heap2.maxRank) {
+                this.maxRank = heap2.maxRank;
+            }
+            this.size += heap2.size;
+        }
     }
 
    /**
@@ -122,7 +137,7 @@ public class FibonacciHeap {
     */
     public int size()
     {
-    	return 0; // should be replaced by student code
+    	return size;
     }
     	
     /**
@@ -132,11 +147,23 @@ public class FibonacciHeap {
     *
      * We will use this in delete min, this is the bucket sorting part.
     */
-    // probably going to be used in deleteMin
-    public int[] countersRep()
-    {
-	int[] arr = new int[42];
-        return arr; //	 to be replaced by student code
+    public int[] countersRep() {
+        if (maxRank == 0) { // Heap is a linked list
+            int[] counts = {roots.size};
+            return counts;
+        }
+        else {
+            int[] counts = new int[maxRank];
+            HeapNode curr = this.roots.head;
+            boolean done = false;
+            while (!done) {
+                counts[curr.rank]++;
+                curr = curr.next;
+                if (curr == roots.head) // Gone over all roots once
+                    done = true;
+            }
+            return counts;
+        }
     }
 	
    /**
@@ -166,29 +193,32 @@ public class FibonacciHeap {
     	return; // should be replaced by student code
     }
 
-   /**
-    * public int potential() 
-    *
-    * This function returns the current potential of the heap, which is:
-    * Potential = #trees + 2*#marked
-    * The potential equals to the number of trees in the heap plus twice the number of marked nodes in the heap. 
-    */
+    /**
+     * Returns the current potential of the heap, given by the potential function
+     * /Phi = # Tree + 2 * # Marked nodes.
+     *
+     * This method runs in O(1) time as it only checks fields.
+     *
+     * @return      The current potential of the heap.
+     */
     public int potential() 
     {    
-    	return 0; // should be replaced by student code
+    	return (roots.size + 2*marked);
     }
 
    /**
     * public static int totalLinks() 
     *
-    * This static function returns the total number of link operations made during the run-time of the program.
-    * A link operation is the operation which gets as input two trees of the same rank, and generates a tree of 
-    * rank bigger by one, by hanging the tree which has larger value in its root on the tree which has smaller value 
-    * in its root.
+    * This static function returns the total number of link operations made during the
+    * run-time of the program. A link operation is the operation which gets as input two
+    * trees of the same rank, and generates a tree of rank bigger by one, by hanging the
+    * tree which has larger value in its root on the tree which has smaller value in its root.
+    *
+    * @return   The number of links made since the class was loaded.
     */
     public static int totalLinks()
     {    
-    	return 0; // should be replaced by student code
+    	return totalLinks;
     }
 
    /**
@@ -199,7 +229,7 @@ public class FibonacciHeap {
     */
     public static int totalCuts()
     {    
-    	return 0; // should be replaced by student code
+    	return totalCuts;
     }
     
    /**
@@ -216,9 +246,9 @@ public class FibonacciHeap {
         private int rank;
         private boolean mark = false;
        /**
-        * The list of children of the node, represented by a nodeCDLL obejct.<br>
+        * The list of children of the node, represented by a NodeCDLL obejct.<br>
         */
-       private nodeCDLL child;
+       private NodeCDLL child;
         private HeapNode next;
         private HeapNode prev;
         private HeapNode parent;
@@ -233,7 +263,7 @@ public class FibonacciHeap {
 
     }
 
-    private class nodeCDLL {
+    private class NodeCDLL {
         private HeapNode head;
         private HeapNode tail;
         private int size;
@@ -267,17 +297,22 @@ public class FibonacciHeap {
         }
 
         /**
-         * Joins two node lists by concatenating another list to the current one.
-         * 
-         * @param other     Another nodeCDLL object to be concatenated to this list
+         * Joins two node lists by concatenating another list to the current one. <br>
+         *
+         * The circular structure of the list is maintained. This method runs in O(1) time.
+         *
+         * @param other     Another NodeCDLL object to be concatenated to this list
          */
-        private void join(nodeCDLL other) {
-            this.tail.next = other.head;
-            other.head.prev = this.tail;
-            this.tail = other.tail;
-            head.prev = tail;
-            tail.next = head;
-        }
+        private void join(NodeCDLL other) {
+            if (other != null && other.size != 0) {
+                this.tail.next = other.head;
+                other.head.prev = this.tail;
+                this.tail = other.tail;
+                head.prev = tail;
+                tail.next = head;
 
+                this.size += other.size;
+            }
+        }
     }
 }
