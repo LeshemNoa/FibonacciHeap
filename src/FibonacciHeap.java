@@ -25,47 +25,58 @@ public class FibonacciHeap {
      */
     private HeapNode min;
     /**
+     * A circular, doubly linked list of the heap trees' roots.
+     */
+    private nodeCDLL roots;
+    /**
      * The number of trees in the heaps.
      */
-    private int treeNum;
+    private int treeNum = roots.size;
     /**
      * The total number of nodes in the heap.
      */
     private int size;
 
+    /**
+     * Constructor for the FibonacciHeap class. Sets default values in all fields
+     * and assigns a new nodeCDLL object to the roots field.
+     */
+    public FibonacciHeap() {
+        roots = new nodeCDLL();
+    }
 
-   /**
-    * public boolean empty()
-    *
-    * precondition: none
-    * 
-    * The method returns true if and only if the heap
-    * is empty.
-    *   
-    */
+    /**
+     * Checks if the heap is empty. <br>
+     *
+     * This method runs in O(1) time as it only requires accessing a field.
+     *
+     * @return      true if the heap is empty, else false.
+     */
     public boolean empty()
     {
         return (min == null);
     }
 
 
-   /**
-    * public HeapNode insert(int key)
-    *
-    * Creates a node (of type HeapNode) which contains the given key, and inserts it into the heap.
-    *
-    * Easy - lazy inset, just update doubly linked list of roots
-    */
-    public HeapNode insert(int key)
-    {
-        HeapNode newNode = new HeapNode(key);
-        if (this.min == null) {
-            this.min = newNode;
-            this.treeNum = 1;
+    /**
+     * Inserts a node with provided key to the heap. <br>
+     *
+     * Employs a lazy insertion algorithm - the new node is inserted as a binomial
+     * tree of rank 0 to the list of roots. Hence this method runs at O(1) time -
+     * it only requires changing a fixed number of pointers.
+     *
+     * @param key   The integer key to be inserted to the heap
+     * @return      The insertted node
+     */
+    public HeapNode insert(int key)  {
+        HeapNode node = this.roots.insert(key);
+        if (min == null) {
+            min = null;
         }
-        else {
-
+        else if (node.key < min.key) {
+            min = node;
         }
+        return node;
     }
 
    /**
@@ -204,7 +215,10 @@ public class FibonacciHeap {
         private int key;
         private int rank;
         private boolean mark = false;
-        private HeapNode child;
+       /**
+        * The list of children of the node, represented by a nodeCDLL obejct.<br>
+        */
+       private nodeCDLL child;
         private HeapNode next;
         private HeapNode prev;
         private HeapNode parent;
@@ -221,15 +235,49 @@ public class FibonacciHeap {
 
     private class nodeCDLL {
         private HeapNode head;
+        private HeapNode tail;
         private int size;
 
-        private nodeCDLL(HeapNode head) {
-            this.head = head;
-            size = 1;
+        /**
+         * Inserts a new node at the end of the list, setting it to be its new tail.
+         * Returns the inserted node. <br>
+         *
+         * This method runs iin O(1) time as it only requires changing a fixed number
+         * of pointers.
+         *
+         * @param key   key of the new node inserted to the node list
+         * @return      a pointer to the inserted node
+         */
+        private HeapNode insert(int key) {
+            HeapNode node = new HeapNode(key);
+            if (head == null) {
+                head = node;
+                tail = node;
+                head.prev = tail;
+                tail.next = head;
+            }
+            else {
+                tail.next = node;
+                node.prev = tail;
+                tail = node;
+                tail.next = head;
+            }
+            size++;
+            return node;
         }
 
-        private insert(HeapNode newNode) {
-
+        /**
+         * Joins two node lists by concatenating another list to the current one.
+         * 
+         * @param other     Another nodeCDLL object to be concatenated to this list
+         */
+        private void join(nodeCDLL other) {
+            this.tail.next = other.head;
+            other.head.prev = this.tail;
+            this.tail = other.tail;
+            head.prev = tail;
+            tail.next = head;
         }
+
     }
 }
