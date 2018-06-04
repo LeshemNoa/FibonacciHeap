@@ -1,5 +1,3 @@
-import java.util.Iterator;
-
 /**
  * FibonacciHeap
  *
@@ -80,7 +78,7 @@ public class FibonacciHeap {
         size++;
         return node;
     }
-
+//TODO - Delete Min
    /**
     * public void deleteMin()
     *
@@ -115,8 +113,7 @@ public class FibonacciHeap {
      *
      * @param heap2     Another Fibonacci heap to be melded with this one
      */
-    public void meld (FibonacciHeap heap2)
-    {
+    public void meld (FibonacciHeap heap2) {
         this.roots.join(heap2.roots);
         if (heap2.roots.size != 0) {
             if (heap2.min.key < this.min.key) {
@@ -139,21 +136,26 @@ public class FibonacciHeap {
     {
     	return size;
     }
-    	
+
     /**
-    * public int[] countersRep()
-    *
-    * Return a counters array, where the value of the i-th entry is the number of trees of order i in the heap. 
-    *
-     * We will use this in delete min, this is the bucket sorting part.
-    */
+     * Produces an array of counters for the number of trees in each rank,
+     * where the rank of a tree is defined as the number of children the tree
+     * root has. <br>
+     *
+     * This method runs in O(n) time, where n is the number of trees in the heap,
+     * as it traverses the root list and increments the appropriate cell in the
+     * array according to the current tree's rank.<br>
+     *
+     * @return      An integer array where the i'th cell contains the number of trees
+     *              of rank i in the heap
+     */
     public int[] countersRep() {
         if (maxRank == 0) { // Heap is a linked list
             int[] counts = {roots.size};
             return counts;
         }
         else {
-            int[] counts = new int[maxRank];
+            int[] counts = new int[maxRank + 1]; //TODO Check this +1
             HeapNode curr = this.roots.head;
             boolean done = false;
             while (!done) {
@@ -165,7 +167,7 @@ public class FibonacciHeap {
             return counts;
         }
     }
-	
+//TODO - Delete
    /**
     * public void delete(HeapNode x)
     *
@@ -181,16 +183,50 @@ public class FibonacciHeap {
     {    
     	return; // should be replaced by student code
     }
+//TODO - Decrease key and documentation
 
-   /**
-    * public void decreaseKey(HeapNode x, int delta)
-    *
-    * The function decreases the key of the node x by delta. The structure of the heap should be updated
-    * to reflect this chage (for example, the cascading cuts procedure should be applied if needed).
-    */
-    public void decreaseKey(HeapNode x, int delta)
-    {    
-    	return; // should be replaced by student code
+    /**
+     * Decreases the key of a heap node's key by a provided integer.<br>
+     *
+     * If
+     * @param x         HeapNode object whose key is to be decrease
+     * @param delta     The number to be reduced from x's key
+     */
+    public void decreaseKey(HeapNode x, int delta) {
+    	x.key -= delta;
+    	HeapNode parent = x.parent;
+    	if (parent != null && x.key < parent.key) {
+    	    cut(x);
+    	    cascadingCut(parent);
+        }
+        if (x.key < min.key)
+            min = x;
+    }
+
+    private void cut(HeapNode x) {
+        HeapNode parent = x.parent;
+        parent.children.remove(x);
+        parent.rank--;
+
+        roots.insert(x);
+        x.parent = null;
+
+        x.mark = false;
+        marked--;
+    }
+
+    private void cascadingCut(HeapNode curr) {
+        HeapNode parent = curr.parent;
+        if (parent != null) {
+            if (curr.mark == false) {
+                curr.mark = true;
+                marked++;
+            }
+            else {
+                cut(curr);
+                cascadingCut(parent);
+            }
+        }
     }
 
     /**
@@ -206,6 +242,7 @@ public class FibonacciHeap {
     	return (roots.size + 2*marked);
     }
 
+//TODO - Documentation for total links
    /**
     * public static int totalLinks() 
     *
@@ -220,7 +257,7 @@ public class FibonacciHeap {
     {    
     	return totalLinks;
     }
-
+//TODO - Documentation for total cuts
    /**
     * public static int totalCuts() 
     *
@@ -231,7 +268,7 @@ public class FibonacciHeap {
     {    
     	return totalCuts;
     }
-    
+//TODO - Documentation for HeapNode class
    /**
     * public class HeapNode
     * 
@@ -244,11 +281,18 @@ public class FibonacciHeap {
 
         private int key;
         private int rank;
-        private boolean mark = false;
+       /**
+        * Mark is true if it has had one of its children cut, false otherwise.<br>
+        *
+        * This attribute is revelant locally: it maintains its value as long as this node
+        * has not been cut from its parent. When ths node is cut, it becomes a root so the
+        * field will be reset to false.
+        */
+       private boolean mark = false;
        /**
         * The list of children of the node, represented by a NodeCDLL obejct.<br>
         */
-       private NodeCDLL child;
+        private NodeCDLL children;
         private HeapNode next;
         private HeapNode prev;
         private HeapNode parent;
@@ -272,7 +316,7 @@ public class FibonacciHeap {
          * Inserts a new node at the end of the list, setting it to be its new tail.
          * Returns the inserted node. <br>
          *
-         * This method runs iin O(1) time as it only requires changing a fixed number
+         * This method runs in O(1) time as it only requires changing a fixed number
          * of pointers.
          *
          * @param key   key of the new node inserted to the node list
@@ -280,6 +324,17 @@ public class FibonacciHeap {
          */
         private HeapNode insert(int key) {
             HeapNode node = new HeapNode(key);
+            insert(node);
+            return node;
+        }
+
+        /**
+         * Inserts an existing node object at the end of the list, setting it to be its
+         * new tail. <br>
+         *
+         * @param node
+         */
+        private void insert(HeapNode node) {
             if (head == null) {
                 head = node;
                 tail = node;
@@ -293,7 +348,6 @@ public class FibonacciHeap {
                 tail.next = head;
             }
             size++;
-            return node;
         }
 
         /**
@@ -313,6 +367,25 @@ public class FibonacciHeap {
 
                 this.size += other.size;
             }
+        }
+
+        /**
+         * Removes a provided heap node from the list. <br>
+         *
+         * Precondition - the provided node is in this NodeCDLL.<br>
+         *
+         * This method runs in O(1) time.
+         *
+         * @param removed
+         */
+        private void remove(HeapNode removed) {
+            HeapNode prev = removed.prev;
+            HeapNode next = removed.next;
+            prev.next = next;
+            next.prev = prev;
+            removed.next = null;
+            removed.prev = null;
+            size--;
         }
     }
 }
