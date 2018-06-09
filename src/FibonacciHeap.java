@@ -6,9 +6,6 @@ import java.util.Iterator;
  * An implementation of fibonacci heap over non-negative integers.
  */
 public class FibonacciHeap {
-
-//   TODO  Rimon - Delete min etc.
-//   TODO Noa - decrease key, delete, etc.
     /**
      * Counts the total number of links executed since the class was launched.
      */
@@ -67,20 +64,17 @@ public class FibonacciHeap {
      * it only requires changing a fixed number of pointers.
      *
      * @param key   The integer key to be inserted to the heap
-     * @return      The insertted node
+     * @return      The inserted node
      */
     public HeapNode insert(int key)  {
         HeapNode node = this.roots.insert(key);
-        if (min == null) {
-            min = null;
-        }
-        else if (node.key < min.key) {
+        if (min == null || node.key < min.key) {
             min = node;
         }
         size++;
         return node;
     }
-//TODO - Delete Min
+//TODO - Delete Min documentation
    /**
     * public void deleteMin()
     *
@@ -92,65 +86,95 @@ public class FibonacciHeap {
    public void deleteMin() {
        HeapNode node = min;
        if (node != null) {
-           
            NodeCDLL children = node.children;
-           for (HeapNode child: node.children) {
-               child.parent = null;
+           if (children.size != 0) {
+               for (HeapNode child : node.children) {
+                   child.parent = null;
+               }
+               roots.join(children);
            }
-           roots.join(children);
            roots.remove(min);
 
-           if (node == node.next) {
+           if (roots.size == 0) {
                min = null;
            } else {
-               min = node.next;
+               min = roots.head;
                consolidate();
            }
            size--;
        }
-
    }
-    public void consolidate(){
-        HeapNode[] rankArray = new HeapNode[maxRank+1];
-        HeapNode node = roots.head;
-        for (int i = 0; i < roots.size; i++) {
-            HeapNode x = node;
-            int d = x.rank;
-            while (rankArray[d] != null){
-                HeapNode y =rankArray[d];
-                if (x.key > y.key) {
-                    x = y;
-                    y = node;// if X is bigger, exchange x with y
-                }
-                link(y,x);
-                rankArray[d] = null;
-                d++;
-            }
-            rankArray[d]=x;
-            node= node.next;
-        }
-        min= null;
-        for (int i = 0; i < rankArray.length; i++) {
-            if (rankArray[i]!= null){
-                if (min==null){
-                    roots = new NodeCDLL();
-                    roots.insert(rankArray[i]);
-                }else {
-                    roots.insert(rankArray[i]);
-                    if (rankArray[i].key<min.key){
-                        min=rankArray[i];
-                    }
-                }
-            }
 
+    /**
+     * Calculates an upper bound for ranks in the heap, based on its size; <br>
+     * It's given by log_phi(n) where n is the number of nodes in the heap. We take the
+     * ceiling of that value to be the rank upper bound.
+     *
+     * This calculation runs in O(1) time, as this is the runtime complexity of arithmetic
+     * operations.
+     *
+     * @param size      Current number of nodes in the heap
+     * @return          An upper bound for its heighest rank
+     */
+   private int rankUpperBound(int size){
+       if (size != 0) {
+           double phi = 1.6180339;
+           return (int) Math.ceil(Math.log10((double) size) / Math.log10(phi));
+       }
+       return 0;
+   }
+
+   private void consolidate(){
+        HeapNode[] rankArray = new HeapNode[rankUpperBound(size)];
+        int n = roots.size;
+        HeapNode node = roots.head;
+
+        for (int i = 0; i < n; i++) {
+            HeapNode curr = node;
+            node = node.next;
+
+            if (curr != null) {
+                int currRank = curr.rank;
+
+                while (rankArray[currRank] != null) {
+                    HeapNode inBucket = rankArray[currRank];
+                    if (curr.key > inBucket.key) {
+                        curr = link(inBucket, curr);
+                    } else {
+                        curr = link(curr, inBucket);
+                    }
+                    rankArray[currRank] = null;
+                    currRank++;
+                    if (currRank > maxRank)
+                        maxRank = currRank;
+                }
+
+                rankArray[currRank] = curr;
+            }
+        }
+
+        min = null;
+        roots = new NodeCDLL();
+
+        for (HeapNode root : rankArray) {
+            if (root != null) {
+                roots.insert(root);
+                if (min == null || root.key < min.key) {
+                    min = root;
+                }
+            }
         }
     }
-    public void link(HeapNode y,HeapNode x){
-        roots.remove(y);
-        x.children.insert(y);
-        x.rank++;
-        y.mark=false;
+
+    private HeapNode link(HeapNode parent, HeapNode child){
+        roots.remove(child);
+        parent.children.insert(child);
+        child.parent = parent;
+        parent.rank++;
+        child.mark = false;
         FibonacciHeap.totalLinks++;
+
+        return parent;
     }
 
    /**
@@ -217,19 +241,16 @@ public class FibonacciHeap {
             return counts;
         }
         else {
-            int[] counts = new int[maxRank + 1]; //TODO Check this +1
-            HeapNode curr = this.roots.head;
-            boolean done = false;
-            while (!done) {
-                counts[curr.rank]++;
-                curr = curr.next;
-                if (curr == roots.head) // Gone over all roots once
-                    done = true;
+            int[] counts = new int[maxRank + 1];
+            for (HeapNode root : roots) {
+                assert (root != null);
+                counts[root.rank]++;
             }
             return counts;
         }
     }
-//TODO - Delete
+
+// TODO - Delete Documentation
    /**
     * public void delete(HeapNode x)
     *
@@ -355,17 +376,24 @@ public class FibonacciHeap {
        /**
         * The list of children of the node, represented by a NodeCDLL obejct.<br>
         */
-        private NodeCDLL children;
+        /*private*/ NodeCDLL children;
         /*private*/ HeapNode next;
         /*private*/ HeapNode prev;
         /*private*/ HeapNode parent;
 
         public HeapNode(int key) {
             this.key = key;
+            this.children = new NodeCDLL();
         }
 
         public int getKey() {
             return this.key;
+        }
+
+        /**************************************/
+        @Override
+        public String toString() {
+            return "" + this.key;
         }
 
     }
@@ -444,19 +472,42 @@ public class FibonacciHeap {
          */
         /*private*/ void remove(HeapNode removed) {
             if (removed == head) {
-                head = removed.next;
+                if (size != 1)
+                    head = removed.next;
+                else
+                    head = null;
             }
             if (removed == tail) {
-                tail = removed.prev;
+                if (size != 1)
+                    tail = removed.prev;
+                else
+                    tail = null;
             }
-            HeapNode prev = removed.prev;
-            HeapNode next = removed.next;
-            prev.next = next;
-            next.prev = prev;
+            if (size != 1) {
+                HeapNode prev = removed.prev;
+                HeapNode next = removed.next;
+                prev.next = next;
+                next.prev = prev;
+            }
             removed.next = null;
             removed.prev = null;
             size--;
         }
+
+        /****************************/
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (HeapNode node : this) {
+                sb.append(node.key);
+                if (node != this.tail)
+                    sb.append(", ");
+            }
+            sb.append("]");
+            return sb.toString();
+        }
+
 
         @Override
         public Iterator iterator() {

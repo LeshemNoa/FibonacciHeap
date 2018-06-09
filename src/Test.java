@@ -1,7 +1,48 @@
+import java.util.Arrays;
 
 public class Test {
     public static void main(String[] args) {
-        cdllTest();
+        HeapTest();
+    }
+
+    public static void HeapTest() {
+        FibonacciHeap heap = new FibonacciHeap();
+        heap.insert(1);
+        FibonacciHeap.HeapNode two = heap.insert(2);
+        FibonacciHeap.HeapNode three = heap.insert(3);
+        heap.insert(1);
+        FibonacciHeap.HeapNode eight = heap.insert(8);
+        heap.insert(10);
+        System.out.println("Size = " + heap.size());
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+
+        System.out.println("\nDeleting min");
+        heap.deleteMin();
+        System.out.println("Size = " + heap.size());
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        System.out.println("Roots: " + heap.roots.toString());
+
+        heap.decreaseKey(two, 4);
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+
+        heap.insert(11);
+        heap.insert(40);
+        heap.insert(5);
+        heap.insert(-7);
+        FibonacciHeap.HeapNode twelve = heap.insert(12);
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        heap.deleteMin();
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
+
     }
 
     public static void cdllTest() {
@@ -102,7 +143,5 @@ public class Test {
         System.out.println("Head prev: " + list.head.prev.getKey());
         System.out.println("Tail next: " + list.tail.next.getKey());
         System.out.println("Tail Prev: " + list.tail.prev.getKey());
-
-
     }
 }
