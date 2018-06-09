@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 /**
  * FibonacciHeap
  *
@@ -26,7 +28,7 @@ public class FibonacciHeap {
     /**
      * A circular, doubly linked list of the heap trees' roots.
      */
-    private NodeCDLL roots;
+    /*private*/ public NodeCDLL roots;
     /**
      * The highest rank out of all the trees in the heap.
      */
@@ -87,8 +89,68 @@ public class FibonacciHeap {
     * Complicated, keep that for later
     *
     */
-    public void deleteMin() {
-     	return; // should be replaced by student code
+   public void deleteMin() {
+       HeapNode node = min;
+       if (node != null) {
+           
+           NodeCDLL children = node.children;
+           for (HeapNode child: node.children) {
+               child.parent = null;
+           }
+           roots.join(children);
+           roots.remove(min);
+
+           if (node == node.next) {
+               min = null;
+           } else {
+               min = node.next;
+               consolidate();
+           }
+           size--;
+       }
+
+   }
+    public void consolidate(){
+        HeapNode[] rankArray = new HeapNode[maxRank+1];
+        HeapNode node = roots.head;
+        for (int i = 0; i < roots.size; i++) {
+            HeapNode x = node;
+            int d = x.rank;
+            while (rankArray[d] != null){
+                HeapNode y =rankArray[d];
+                if (x.key > y.key) {
+                    x = y;
+                    y = node;// if X is bigger, exchange x with y
+                }
+                link(y,x);
+                rankArray[d] = null;
+                d++;
+            }
+            rankArray[d]=x;
+            node= node.next;
+        }
+        min= null;
+        for (int i = 0; i < rankArray.length; i++) {
+            if (rankArray[i]!= null){
+                if (min==null){
+                    roots = new NodeCDLL();
+                    roots.insert(rankArray[i]);
+                }else {
+                    roots.insert(rankArray[i]);
+                    if (rankArray[i].key<min.key){
+                        min=rankArray[i];
+                    }
+                }
+            }
+
+        }
+    }
+    public void link(HeapNode y,HeapNode x){
+        roots.remove(y);
+        x.children.insert(y);
+        x.rank++;
+        y.mark=false;
+        FibonacciHeap.totalLinks++;
     }
 
    /**
@@ -180,8 +242,9 @@ public class FibonacciHeap {
     *
     */
     public void delete(HeapNode x) 
-    {    
-    	return; // should be replaced by student code
+    {
+        decreaseKey(x, x.key + Integer.MAX_VALUE);
+        deleteMin();
     }
 //TODO - Decrease key and documentation
 
@@ -293,9 +356,9 @@ public class FibonacciHeap {
         * The list of children of the node, represented by a NodeCDLL obejct.<br>
         */
         private NodeCDLL children;
-        private HeapNode next;
-        private HeapNode prev;
-        private HeapNode parent;
+        /*private*/ HeapNode next;
+        /*private*/ HeapNode prev;
+        /*private*/ HeapNode parent;
 
         public HeapNode(int key) {
             this.key = key;
@@ -307,10 +370,10 @@ public class FibonacciHeap {
 
     }
 
-    private class NodeCDLL {
-        private HeapNode head;
-        private HeapNode tail;
-        private int size;
+    /*private*/ class NodeCDLL implements Iterable<HeapNode> {
+        /*private*/ HeapNode head;
+        /*private*/ HeapNode tail;
+        /*private*/ int size;
 
         /**
          * Inserts a new node at the end of the list, setting it to be its new tail.
@@ -322,7 +385,7 @@ public class FibonacciHeap {
          * @param key   key of the new node inserted to the node list
          * @return      a pointer to the inserted node
          */
-        private HeapNode insert(int key) {
+        /*private*/ HeapNode insert(int key) {
             HeapNode node = new HeapNode(key);
             insert(node);
             return node;
@@ -334,7 +397,7 @@ public class FibonacciHeap {
          *
          * @param node
          */
-        private void insert(HeapNode node) {
+        /*private*/ void insert(HeapNode node) {
             if (head == null) {
                 head = node;
                 tail = node;
@@ -346,6 +409,7 @@ public class FibonacciHeap {
                 node.prev = tail;
                 tail = node;
                 tail.next = head;
+                head.prev = tail;
             }
             size++;
         }
@@ -357,7 +421,7 @@ public class FibonacciHeap {
          *
          * @param other     Another NodeCDLL object to be concatenated to this list
          */
-        private void join(NodeCDLL other) {
+        /*private*/ void join(NodeCDLL other) {
             if (other != null && other.size != 0) {
                 this.tail.next = other.head;
                 other.head.prev = this.tail;
@@ -378,7 +442,13 @@ public class FibonacciHeap {
          *
          * @param removed
          */
-        private void remove(HeapNode removed) {
+        /*private*/ void remove(HeapNode removed) {
+            if (removed == head) {
+                head = removed.next;
+            }
+            if (removed == tail) {
+                tail = removed.prev;
+            }
             HeapNode prev = removed.prev;
             HeapNode next = removed.next;
             prev.next = next;
@@ -386,6 +456,34 @@ public class FibonacciHeap {
             removed.next = null;
             removed.prev = null;
             size--;
+        }
+
+        @Override
+        public Iterator iterator() {
+            return new nodeCDLLIterator();
+        }
+
+        /*private*/ class nodeCDLLIterator implements Iterator<HeapNode> {
+            boolean done = false;
+            HeapNode curr;
+
+            @Override
+            public boolean hasNext() {
+                if (head == null)
+                    done = true;
+                return (! done);
+            }
+
+            @Override
+            public HeapNode next() {
+                if (curr == null)
+                    curr = head;
+                else
+                    curr = curr.next;
+                if (curr == tail)
+                    done = true;
+                return curr;
+            }
         }
     }
 }
