@@ -1,8 +1,12 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Test {
     public static void main(String[] args) {
-        HeapTest();
+        fuzzTest(20);
     }
 
     public static void HeapTest() {
@@ -13,37 +17,110 @@ public class Test {
         heap.insert(1);
         FibonacciHeap.HeapNode eight = heap.insert(8);
         heap.insert(10);
-        System.out.println("Size = " + heap.size());
         System.out.println("min = " + heap.findMin().getKey());
-        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
 
         System.out.println("\nDeleting min");
         heap.deleteMin();
-        System.out.println("Size = " + heap.size());
+        /*System.out.println("Size = " + heap.size());
         System.out.println("min = " + heap.findMin().getKey());
         System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
-        System.out.println("Roots: " + heap.roots.toString());
+        System.out.println("Roots: " + heap.roots.toString());*/
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
 
+        System.out.println("\nDecreasing key 2 -> -4");
         heap.decreaseKey(two, 4);
-        System.out.println("min = " + heap.findMin().getKey());
-        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
 
+        System.out.println("\nInserting stuff");
         heap.insert(11);
         heap.insert(40);
         heap.insert(5);
         heap.insert(-7);
         FibonacciHeap.HeapNode twelve = heap.insert(12);
         System.out.println("min = " + heap.findMin().getKey());
-        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
-        heap.deleteMin();
-        System.out.println("min = " + heap.findMin().getKey());
-        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
-
         for (FibonacciHeap.HeapNode root : heap.roots) {
             System.out.println(HeapPrinter.toString(root));
         }
 
+        System.out.println("\nDelete min");
+        heap.deleteMin();
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
+
+        System.out.println("\nDelete min");
+        heap.deleteMin();
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
+
+        System.out.println("\nDelete min");
+        heap.deleteMin();
+        System.out.println("min = " + heap.findMin().getKey());
+        System.out.println("Ranks: " + Arrays.toString(heap.countersRep()));
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
     }
+
+
+    public static void fuzzTest(int size) {
+        FibonacciHeap heap = new FibonacciHeap();
+        List<FibonacciHeap.HeapNode> list = new ArrayList<>();
+        Random r = new Random(11);
+
+        for (int i = 0; i < size; i++) {
+            list.add(heap.insert(r.nextInt(100)));
+        }
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
+        System.out.println("------Done inserting------");
+
+        for (int i = 0; i < size / 2; i++) {
+            FibonacciHeap.HeapNode node = list.get(r.nextInt(list.size()));
+            int randomNum = Math.floorMod(Math.abs(r.nextInt()),3);
+            System.out.println("i = " +i + ", " + "node " + node);
+            switch (randomNum) {
+                case 0: {
+                    int delta = Math.abs(r.nextInt());
+                    System.out.println("Decrease Key by " + delta +"\n");
+                    heap.decreaseKey(node, delta);
+                    for (FibonacciHeap.HeapNode root : heap.roots) {
+                        System.out.println(HeapPrinter.toString(root));
+                    }
+                    break;
+                }
+                case 1: {
+                    System.out.println("Delete Min\n");
+                    heap.deleteMin();
+                    break;
+                }
+                case 2: {
+                    System.out.println("Delete\n");
+                    heap.delete(node);
+                    for (FibonacciHeap.HeapNode root : heap.roots) {
+                        System.out.println(HeapPrinter.toString(root));
+                    }
+                    break;
+                }
+            }
+        }
+        for (FibonacciHeap.HeapNode root : heap.roots) {
+            System.out.println(HeapPrinter.toString(root));
+        }
+     }
 
     public static void cdllTest() {
         FibonacciHeap heap = new FibonacciHeap();

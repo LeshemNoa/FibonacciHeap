@@ -264,7 +264,7 @@ public class FibonacciHeap {
     */
     public void delete(HeapNode x) 
     {
-        decreaseKey(x, x.key + Integer.MAX_VALUE);
+        decreaseKeyTo(x, min.key - 10);
         deleteMin();
     }
 //TODO - Decrease key and documentation
@@ -277,11 +277,15 @@ public class FibonacciHeap {
      * @param delta     The number to be reduced from x's key
      */
     public void decreaseKey(HeapNode x, int delta) {
-    	x.key -= delta;
-    	HeapNode parent = x.parent;
-    	if (parent != null && x.key < parent.key) {
-    	    cut(x);
-    	    cascadingCut(parent);
+        decreaseKeyTo(x, x.key - delta);
+    }
+
+    public void decreaseKeyTo(HeapNode x, int newKey) {
+        x.key = newKey;
+        HeapNode parent = x.parent;
+        if (parent != null && x.key < parent.key) {
+            cut(x);
+            cascadingCut(parent);
         }
         if (x.key < min.key)
             min = x;
