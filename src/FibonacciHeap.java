@@ -15,7 +15,7 @@ public class FibonacciHeap {
      */
     private static int totalCuts;
     /**
-     * The current number of marked nodes in the tree.
+     * The current number of marked nodes in the heap.
      */
     private int marked;
     /**
@@ -25,7 +25,7 @@ public class FibonacciHeap {
     /**
      * A circular, doubly linked list of the heap trees' roots.
      */
-    /*private*/ public NodeCDLL roots;
+    public NodeCDLL roots;
     /**
      * The highest rank out of all the trees in the heap.
      */
@@ -75,15 +75,15 @@ public class FibonacciHeap {
         size++;
         return node;
     }
-//TODO - Delete Min documentation
-   /**
-    * public void deleteMin()
-    *
-    * Delete the node containing the minimum key.
-    *
-    * Complicated, keep that for later
-    *
-    */
+
+    /**
+     * Removes the node with the current minimal key in the heap. <br>
+     *
+     * This method's runtime complexity is determined by the complexity of the
+     * consolidation process during which the new minimal node is found. Consolidate
+     * runs in O(logn) amortized time, hence deleteMin runs in O(logn) amortized time
+     * as well.
+     */
    public void deleteMin() {
        HeapNode node = min;
        if (node != null) {
@@ -125,6 +125,17 @@ public class FibonacciHeap {
        return 0;
    }
 
+    /**
+     * Reduces the number of trees in the heap and finds the node with the minimal
+     * key in the heap. <br>
+     *
+     * During the consolidation process, an auxiliary array is used to sort the trees
+     * in the heap by their ranks. The size of the array is chosen to be the highest
+     * possible tree rank that may exists in a heap of the current size, which is O(logn).
+     * The bound is calculted by the rankUpperBound method. <br>
+     *
+     * This method runs in O(logn) amortized time. <br>
+     */
    private void consolidate(){
         HeapNode[] rankArray = new HeapNode[rankUpperBound(size)];
         int n = roots.size;
@@ -168,6 +179,18 @@ public class FibonacciHeap {
         }
     }
 
+    /**
+     * Links two trees of the same rank to form one tree whose rank is greater
+     * by 1.<br>
+     *
+     * This method runs in O(1) time as it only requires changing a fixed number
+     * of nodes.
+     *
+     * @param parent        The root node which will be placed as the root of the resulting
+     *                      tree.
+     * @param child         The root node which will be added as a child of the new root node.
+     * @return              The root of the new tree.
+     */
     private HeapNode link(HeapNode parent, HeapNode child){
         roots.remove(child);
         parent.children.insert(child);
@@ -179,12 +202,13 @@ public class FibonacciHeap {
         return parent;
     }
 
-   /**
-    * public HeapNode findMin()
-    *
-    * Return the node of the heap whose key is minimal. 
-    *
-    */
+    /**
+     * Finds the node with the minimal key in the heap. <br>
+     *
+     * Runs in O(1) time as it returns a field.
+     *
+     * @return      HeapNode object with the smallest key in the heap.
+     */
     public HeapNode findMin()
     {
     	return min;
@@ -216,12 +240,13 @@ public class FibonacciHeap {
         this.size += heap2.size;
     }
 
-   /**
-    * public int size()
-    *
-    * Return the number of elements in the heap
-    *   
-    */
+    /**
+     * Returns the size of the heap. <br>
+     *
+     * Runs in O(1) time as it returns a field.
+     *
+     * @return      The number of nodes in the heap.
+     */
     public int size()
     {
     	return size;
@@ -254,18 +279,14 @@ public class FibonacciHeap {
         }
     }
 
-// TODO - Delete Documentation
-   /**
-    * public void delete(HeapNode x)
-    *
-    * Delete and decrese key work very similar.
-    *
-    * We cut the subtree of the node we delete, we remove the node as the root,
-    * and add its child subtree to the list of trees. Perhaps triggering cascading
-    * cuts.
-    *
-    *
-    */
+    /**
+     * Removed the provided HeapNode object from the heap. <br>
+     *
+     * This method decreases the key of the node to be the smaller than the
+     * current minimal key, and then calls deleteMin.
+     *
+     * @param x     The node to be removed from the heap
+     */
     public void delete(HeapNode x) 
     {
         if (x == null) {
@@ -275,20 +296,39 @@ public class FibonacciHeap {
         decreaseKeyTo(x, min.key - 10);
         deleteMin();
     }
-//TODO - Decrease key and documentation
 
     /**
-     * Decreases the key of a heap node's key by a provided integer.<br>
+     * Decreases the key of a heap node's key by a provided integer delta.<br>
      *
-     * If
-     * @param x         HeapNode object whose key is to be decrease
+     * Calls a more general function, decreaseKeyTo, which sets the node's
+     * key to the provided value rather than reducing it by a given delta. <br>
+     *
+     * Hence, decreaseKey's runtime complexity is determined by that of
+     * decreaseKeyTo, which runs in O(1) amortized time. <br>
+     *
+     * @param x         HeapNode object whose key is to be decreased
      * @param delta     The number to be reduced from x's key
      */
     public void decreaseKey(HeapNode x, int delta) {
         decreaseKeyTo(x, x.key - delta);
     }
 
-    public void decreaseKeyTo(HeapNode x, int newKey) {
+    /**
+     * Sets the key of the provided node to be the given integer. <br>
+     *
+     * If the heap rule is broken after the new key is set, that node
+     * and its subtree are cut from the tree in which they are currently,
+     * and the subtree is added to the list of trees in the heap. If the
+     * node that has been cut was a child of a node whose child was cut
+     * once before, a sequence of cascading cuts is triggered. <br>
+     *
+     * This method runs in O(1) amortized time, as the cut and cascadingCut
+     * methods run in constant amortized time.<br>
+     *
+     * @param x         HeapNode object whose key is to be decreased
+     * @param newKey    The new key to be given to the node
+     */
+    private void decreaseKeyTo(HeapNode x, int newKey) {
         x.key = newKey;
         HeapNode parent = x.parent;
         if (parent != null && x.key < parent.key) {
@@ -300,6 +340,15 @@ public class FibonacciHeap {
         }
     }
 
+    /**
+     * Removed the provided node from as its parent's child, adding its
+     * subtree to the list of trees in the heap. <br>
+     *
+     * This method runs in O(1) time.
+     *
+     * @param x     The node to be cut off from its parent and added
+     *              to the root list.
+     */
     private void cut(HeapNode x) {
         HeapNode parent = x.parent;
         parent.children.remove(x);
@@ -312,6 +361,10 @@ public class FibonacciHeap {
         marked--;
     }
 
+    /**
+     *
+     * @param curr
+     */
     private void cascadingCut(HeapNode curr) {
         HeapNode parent = curr.parent;
         if (parent != null) {
@@ -339,44 +392,43 @@ public class FibonacciHeap {
     	return (roots.size + 2*marked);
     }
 
-//TODO - Documentation for total links
-   /**
-    * public static int totalLinks() 
-    *
-    * This static function returns the total number of link operations made during the
-    * run-time of the program. A link operation is the operation which gets as input two
-    * trees of the same rank, and generates a tree of rank bigger by one, by hanging the
-    * tree which has larger value in its root on the tree which has smaller value in its root.
-    *
-    * @return   The number of links made since the class was loaded.
-    */
+    /**
+     * Returns the total number of links that occurred during the deleteMin process
+     * since the class was first launched. <br>
+     *
+     * Runs in O(1) time as it returns a static field.
+     *
+     * @return      The accumulated number of links that occurred during the run
+     *              of the class.
+     */
     public static int totalLinks()
     {    
     	return totalLinks;
     }
-//TODO - Documentation for total cuts
-   /**
-    * public static int totalCuts() 
-    *
-    * This static function returns the total number of cut operations made during the run-time of the program.
-    * A cut operation is the operation which diconnects a subtree from its parent (during decreaseKey/delete methods). 
-    */
+
+    /**
+     * Returns the total number of cuts that occurred during the decreaseKey process
+     * since the class was first launched. <br>
+     *
+     * Runs in O(1) time as it returns a static field.
+     *
+     * @return      The accumulated number of cuts that occurred during the run
+     *              of the class.
+     */
     public static int totalCuts()
     {    
     	return totalCuts;
     }
-//TODO - Documentation for HeapNode class
-   /**
-    * public class HeapNode
-    * 
-    * If you wish to implement classes other than FibonacciHeap
-    * (for example HeapNode), do it in this file, not in 
-    * another file 
-    *  
-    */
+
+    /**
+     * Represents an node in the heap. Contains an integer key.
+     */
     public class HeapNode {
 
         private int key;
+        /**
+         * The number of children this node has.
+         */
         private int rank;
        /**
         * Mark is true if it has had one of its children cut, false otherwise.<br>
@@ -389,32 +441,66 @@ public class FibonacciHeap {
        /**
         * The list of children of the node, represented by a NodeCDLL obejct.<br>
         */
-        /*private*/ NodeCDLL children;
-        /*private*/ HeapNode next;
-        /*private*/ HeapNode prev;
-        /*private*/ HeapNode parent;
+        private NodeCDLL children;
+        /**
+         * The node's right sibling.<br>
+         *
+         * If the node is the rightmost of its parent's children, its next node is the
+         * leftmost one, as the structure is doubly linked.
+         */
+        private HeapNode next;
+        /**
+         * The node's left sibling.<br>
+         *
+         * If the node is the leftmost of its parent's children, its prev node is the
+         * rightmost one one, as the structure is doubly linked.
+         */
+        private HeapNode prev;
+        /**
+         * The node's parent node, or null if it's a root of a tree in the heap.
+         */
+        private HeapNode parent;
 
+        /**
+         * A constructor for the HeapNode class. <br>
+         *
+         * Sets the provided key as the key of the node created, and initialized
+         * an empty NodeCDLL object to be set as the node's list of children.
+         *
+         * @param key       The key to be associated with the new node.
+         */
         public HeapNode(int key) {
             this.key = key;
             this.children = new NodeCDLL();
         }
 
+        /**
+         * Returns the key of this node object.
+         *
+         * @return      The key of this node.
+         */
         public int getKey() {
             return this.key;
         }
 
-        /**************************************/
-        @Override
-        public String toString() {
-            return "" + this.key;
-        }
-
     }
 
-    /*private*/ class NodeCDLL implements Iterable<HeapNode> {
-        /*private*/ HeapNode head;
-        /*private*/ HeapNode tail;
-        /*private*/ int size;
+    /**
+     * Represents a circular doubly linked list of HeapNode objects.
+     */
+    private class NodeCDLL implements Iterable<HeapNode> {
+        /**
+         * The first node in the list.
+         */
+        private HeapNode head;
+        /**
+         * The last node in the list.
+         */
+        private HeapNode tail;
+        /**
+         * The number of HeapNodes in the list.
+         */
+        private int size;
 
         /**
          * Inserts a new node at the end of the list, setting it to be its new tail.
@@ -426,7 +512,7 @@ public class FibonacciHeap {
          * @param key   key of the new node inserted to the node list
          * @return      a pointer to the inserted node
          */
-        /*private*/ HeapNode insert(int key) {
+        private HeapNode insert(int key) {
             HeapNode node = new HeapNode(key);
             insert(node);
             return node;
@@ -438,7 +524,7 @@ public class FibonacciHeap {
          *
          * @param node
          */
-        /*private*/ void insert(HeapNode node) {
+        private void insert(HeapNode node) {
             if (head == null) {
                 head = node;
                 tail = node;
@@ -462,7 +548,7 @@ public class FibonacciHeap {
          *
          * @param other     Another NodeCDLL object to be concatenated to this list
          */
-        /*private*/ void join(NodeCDLL other) {
+        private void join(NodeCDLL other) {
             if (other != null && other.size != 0) {
                 this.tail.next = other.head;
                 other.head.prev = this.tail;
@@ -483,7 +569,7 @@ public class FibonacciHeap {
          *
          * @param removed
          */
-        /*private*/ void remove(HeapNode removed) {
+        private void remove(HeapNode removed) {
             if (removed == head) {
                 if (size != 1)
                     head = removed.next;
@@ -507,30 +593,35 @@ public class FibonacciHeap {
             size--;
         }
 
-        /****************************/
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("[");
-            for (HeapNode node : this) {
-                sb.append(node.key);
-                if (node != this.tail)
-                    sb.append(", ");
-            }
-            sb.append("]");
-            return sb.toString();
-        }
-
-
+        /**
+         * Returns an iterator for the NodeCDLL. <br>
+         *
+         * @return      A NodeCDLLIterator object for this list.
+         */
         @Override
         public Iterator iterator() {
             return new nodeCDLLIterator();
         }
 
-        /*private*/ class nodeCDLLIterator implements Iterator<HeapNode> {
+        /**
+         * An iterator for the NodeCDLL class.
+         */
+        private class nodeCDLLIterator implements Iterator<HeapNode> {
+            /**
+             * True if all the nodes in the list have been retuned by the next
+             * method once already, implying the iterator is exhausted, otherwise
+             * false.
+             */
             boolean done = false;
+            /**
+             * The current HeapNode object to be returned in the next call to next().
+             */
             HeapNode curr;
 
+            /**
+             * 
+             * @return
+             */
             @Override
             public boolean hasNext() {
                 if (head == null)
