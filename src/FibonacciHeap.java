@@ -52,6 +52,7 @@ public class FibonacciHeap {
      */
     public boolean empty()
     {
+        assert (min == null) == (size == 0);
         return (min == null);
     }
 
@@ -68,7 +69,7 @@ public class FibonacciHeap {
      */
     public HeapNode insert(int key)  {
         HeapNode node = this.roots.insert(key);
-        if (min == null || node.key < min.key) {
+        if (empty() || node.key < min.key) {
             min = node;
         }
         size++;
@@ -145,8 +146,9 @@ public class FibonacciHeap {
                     }
                     rankArray[currRank] = null;
                     currRank++;
-                    if (currRank > maxRank)
+                    if (currRank > maxRank) {
                         maxRank = currRank;
+                    }
                 }
 
                 rankArray[currRank] = curr;
@@ -159,7 +161,7 @@ public class FibonacciHeap {
         for (HeapNode root : rankArray) {
             if (root != null) {
                 roots.insert(root);
-                if (min == null || root.key < min.key) {
+                if (empty() || root.key < min.key) {
                     min = root;
                 }
             }
@@ -200,16 +202,18 @@ public class FibonacciHeap {
      * @param heap2     Another Fibonacci heap to be melded with this one
      */
     public void meld (FibonacciHeap heap2) {
-        this.roots.join(heap2.roots);
-        if (heap2.roots.size != 0) {
-            if (heap2.min.key < this.min.key) {
-                this.min = heap2.min;
-            }
-            if (this.maxRank < heap2.maxRank) {
-                this.maxRank = heap2.maxRank;
-            }
-            this.size += heap2.size;
+        if (heap2 == null || heap2.roots.size == 0) {
+            return;
         }
+        this.roots.join(heap2.roots);
+
+        if (this.empty() || heap2.min.key < this.min.key) {
+            this.min = heap2.min;
+        }
+        if (this.maxRank < heap2.maxRank) {
+            this.maxRank = heap2.maxRank;
+        }
+        this.size += heap2.size;
     }
 
    /**
@@ -264,6 +268,10 @@ public class FibonacciHeap {
     */
     public void delete(HeapNode x) 
     {
+        if (x == null) {
+            return;
+        }
+
         decreaseKeyTo(x, min.key - 10);
         deleteMin();
     }
@@ -287,8 +295,9 @@ public class FibonacciHeap {
             cut(x);
             cascadingCut(parent);
         }
-        if (x.key < min.key)
+        if (x.key < min.key) {
             min = x;
+        }
     }
 
     private void cut(HeapNode x) {
