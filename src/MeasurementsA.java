@@ -4,15 +4,17 @@ public class MeasurementsA {
 
     public static void main(String[] args) {
 
-    long startA = System.currentTimeMillis();
+        long startA = System.nanoTime();
 
-    FibonacciHeap heapAm = new FibonacciHeap();
-    int m = 1000;
-    for (int i = m; i >= 1; i--) {
-        heapAm.insert(i);
-    }
-    long endA = System.currentTimeMillis();
+        int m = 1000;
+        FibonacciHeap heapAm = new FibonacciHeap();
+        for (int j = m; j >= 1; j--) {
+            heapAm.insert(j);
+        }
+        long endA = System.nanoTime();
+        long time = (endA - startA)/(long) 1000000000.0;
 
-    System.out.println(endA - startA + "," + FibonacciHeap.totalLinks() + "," + FibonacciHeap.totalCuts() + "," + heapAm.potential());
+        System.out.println(""+ m + ","+ + time + "," + FibonacciHeap.totalLinks() +
+                "," + FibonacciHeap.totalCuts() + "," + heapAm.potential());
     }
 }

@@ -6,8 +6,8 @@ public class HeapPrinter {
     // NOTE: implement this function (if no children, return EMPTY LIST)
     /*private*/ static ArrayList<FibonacciHeap.HeapNode> getChildren(/*notnull*/ FibonacciHeap.HeapNode parent) {
         ArrayList<FibonacciHeap.HeapNode> list = new ArrayList<>();
-        if (parent.children.size != 0) {
-            for (FibonacciHeap.HeapNode child: parent.children) {
+        if (parent.getChildren().getSize() != 0) {
+            for (FibonacciHeap.HeapNode child: parent.getChildren()) {
                 list.add(child);
             }
         }

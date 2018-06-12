@@ -87,16 +87,16 @@ public class FibonacciHeap {
    public void deleteMin() {
        HeapNode node = min;
        if (node != null) {
-           NodeCDLL children = node.children;
-           if (children.size != 0) {
-               for (HeapNode child : node.children) {
+           NodeCDLL children = node.getChildren();
+           if (children.getSize() != 0) {
+               for (HeapNode child : node.getChildren()) {
                    child.parent = null;
                }
                roots.join(children);
            }
            roots.remove(min);
 
-           if (roots.size == 0) {
+           if (roots.getSize() == 0) {
                min = null;
            } else {
                min = roots.head;
@@ -138,7 +138,7 @@ public class FibonacciHeap {
      */
    private void consolidate(){
         HeapNode[] rankArray = new HeapNode[rankUpperBound(size)];
-        int n = roots.size;
+        int n = roots.getSize();
         HeapNode node = roots.head;
 
         for (int i = 0; i < n; i++) {
@@ -193,7 +193,7 @@ public class FibonacciHeap {
      */
     private HeapNode link(HeapNode parent, HeapNode child){
         roots.remove(child);
-        parent.children.insert(child);
+        parent.getChildren().insert(child);
         child.parent = parent;
         parent.rank++;
         child.mark = false;
@@ -226,7 +226,7 @@ public class FibonacciHeap {
      * @param heap2     Another Fibonacci heap to be melded with this one
      */
     public void meld (FibonacciHeap heap2) {
-        if (heap2 == null || heap2.roots.size == 0) {
+        if (heap2 == null || heap2.roots.getSize() == 0) {
             return;
         }
         this.roots.join(heap2.roots);
@@ -266,7 +266,7 @@ public class FibonacciHeap {
      */
     public int[] countersRep() {
         if (maxRank == 0) { // Heap is a linked list
-            int[] counts = {roots.size};
+            int[] counts = {roots.getSize()};
             return counts;
         }
         else {
@@ -351,7 +351,7 @@ public class FibonacciHeap {
      */
     private void cut(HeapNode x) {
         HeapNode parent = x.parent;
-        parent.children.remove(x);
+        parent.getChildren().remove(x);
         parent.rank--;
 
         roots.insert(x);
@@ -389,7 +389,7 @@ public class FibonacciHeap {
      */
     public int potential() 
     {    
-    	return (roots.size + 2*marked);
+    	return (roots.getSize() + 2*marked);
     }
 
     /**
@@ -438,10 +438,7 @@ public class FibonacciHeap {
         * field will be reset to false.
         */
        private boolean mark = false;
-       /**
-        * The list of children of the node, represented by a NodeCDLL obejct.<br>
-        */
-        private NodeCDLL children;
+       private NodeCDLL children;
         /**
          * The node's right sibling.<br>
          *
@@ -483,12 +480,18 @@ public class FibonacciHeap {
             return this.key;
         }
 
+        /**
+         * The list of children of the node, represented by a NodeCDLL obejct.<br>
+         */
+        NodeCDLL getChildren() {
+            return children;
+        }
     }
 
     /**
      * Represents a circular doubly linked list of HeapNode objects.
      */
-    private class NodeCDLL implements Iterable<HeapNode> {
+    public class NodeCDLL implements Iterable<HeapNode> {
         /**
          * The first node in the list.
          */
@@ -497,9 +500,6 @@ public class FibonacciHeap {
          * The last node in the list.
          */
         private HeapNode tail;
-        /**
-         * The number of HeapNodes in the list.
-         */
         private int size;
 
         /**
@@ -538,7 +538,7 @@ public class FibonacciHeap {
                 tail.next = head;
                 head.prev = tail;
             }
-            size++;
+            size = getSize() + 1;
         }
 
         /**
@@ -549,14 +549,14 @@ public class FibonacciHeap {
          * @param other     Another NodeCDLL object to be concatenated to this list
          */
         private void join(NodeCDLL other) {
-            if (other != null && other.size != 0) {
+            if (other != null && other.getSize() != 0) {
                 this.tail.next = other.head;
                 other.head.prev = this.tail;
                 this.tail = other.tail;
                 head.prev = tail;
                 tail.next = head;
 
-                this.size += other.size;
+                this.size = this.getSize() + other.getSize();
             }
         }
 
@@ -571,18 +571,18 @@ public class FibonacciHeap {
          */
         private void remove(HeapNode removed) {
             if (removed == head) {
-                if (size != 1)
+                if (getSize() != 1)
                     head = removed.next;
                 else
                     head = null;
             }
             if (removed == tail) {
-                if (size != 1)
+                if (getSize() != 1)
                     tail = removed.prev;
                 else
                     tail = null;
             }
-            if (size != 1) {
+            if (getSize() != 1) {
                 HeapNode prev = removed.prev;
                 HeapNode next = removed.next;
                 prev.next = next;
@@ -590,7 +590,7 @@ public class FibonacciHeap {
             }
             removed.next = null;
             removed.prev = null;
-            size--;
+            size = getSize() - 1;
         }
 
         /**
@@ -601,6 +601,13 @@ public class FibonacciHeap {
         @Override
         public Iterator iterator() {
             return new nodeCDLLIterator();
+        }
+
+        /**
+         * The number of HeapNodes in the list.
+         */
+        public int getSize() {
+            return size;
         }
 
         /**
@@ -619,7 +626,7 @@ public class FibonacciHeap {
             HeapNode curr;
 
             /**
-             * 
+             *
              * @return
              */
             @Override
