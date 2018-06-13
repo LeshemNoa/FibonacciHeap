@@ -1,9 +1,8 @@
 import java.util.Iterator;
 
 /**
- * FibonacciHeap
- *
- * An implementation of fibonacci heap over non-negative integers.
+ * Rimon Shy Rimonshy 302989215
+ * Noa Leshem noaleshem1 205916869
  */
 public class FibonacciHeap {
     /**
@@ -25,7 +24,7 @@ public class FibonacciHeap {
     /**
      * A circular, doubly linked list of the heap trees' roots.
      */
-    public NodeCDLL roots;
+    private NodeCDLL roots;
     /**
      * The highest rank out of all the trees in the heap.
      */
@@ -132,7 +131,7 @@ public class FibonacciHeap {
      * During the consolidation process, an auxiliary array is used to sort the trees
      * in the heap by their ranks. The size of the array is chosen to be the highest
      * possible tree rank that may exists in a heap of the current size, which is O(logn).
-     * The bound is calculted by the rankUpperBound method. <br>
+     * The bound is calculated by the rankUpperBound method. <br>
      *
      * This method runs in O(logn) amortized time. <br>
      */
@@ -359,16 +358,25 @@ public class FibonacciHeap {
 
         x.mark = false;
         marked--;
+        totalCuts++;
     }
 
     /**
+     * Implementation of the Cascading Cuts algorithm. <br>
      *
-     * @param curr
+     * Cascading cuts are triggered when a child of a marked node is cut during
+     * the decrease key process. Child nodes are cut recursively up the path
+     * from the first node that was cut to the root, until a child is cut from
+     * an unmarked node or if the root is reached. <br>
+     *
+     * This method runs in O(logn) amortized time.
+     *
+     * @param curr      The parent node whose child was cut.
      */
     private void cascadingCut(HeapNode curr) {
         HeapNode parent = curr.parent;
         if (parent != null) {
-            if (curr.mark == false) {
+            if (!curr.mark) {
                 curr.mark = true;
                 marked++;
             }
@@ -438,6 +446,9 @@ public class FibonacciHeap {
         * field will be reset to false.
         */
        private boolean mark = false;
+        /**
+         * The children of the node, represented by a NodeCDLL object.
+         */
        private NodeCDLL children;
         /**
          * The node's right sibling.<br>
@@ -481,9 +492,11 @@ public class FibonacciHeap {
         }
 
         /**
-         * The list of children of the node, represented by a NodeCDLL obejct.<br>
+         * Returns this node's children.
+         *
+         * @return      The list of children of this node
          */
-        NodeCDLL getChildren() {
+        private NodeCDLL getChildren() {
             return children;
         }
     }
@@ -522,7 +535,9 @@ public class FibonacciHeap {
          * Inserts an existing node object at the end of the list, setting it to be its
          * new tail. <br>
          *
-         * @param node
+         * This method runs in O(1) time.
+         *
+         * @param node      The new node to be added to this list.
          */
         private void insert(HeapNode node) {
             if (head == null) {
@@ -567,7 +582,7 @@ public class FibonacciHeap {
          *
          * This method runs in O(1) time.
          *
-         * @param removed
+         * @param removed       The node to be removed from the list.
          */
         private void remove(HeapNode removed) {
             if (removed == head) {
@@ -626,8 +641,10 @@ public class FibonacciHeap {
             HeapNode curr;
 
             /**
+             * Checks if the iterator has been exhausted, having returned each node once.
              *
-             * @return
+             * @return      True if iterator has not yet finished iterating over the list,
+             *              otherwise false.
              */
             @Override
             public boolean hasNext() {
@@ -636,6 +653,10 @@ public class FibonacciHeap {
                 return (! done);
             }
 
+            /**
+             *
+             * @return      The next node in the list.
+             */
             @Override
             public HeapNode next() {
                 if (curr == null)
@@ -649,3 +670,5 @@ public class FibonacciHeap {
         }
     }
 }
+
+
